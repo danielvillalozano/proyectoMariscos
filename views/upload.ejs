@@ -1,0 +1,14 @@
+<%- include('layout') %>
+
+<div class="container mt-5">
+  <h2>Subir Imagen</h2>
+  <form action="/api/upload" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="image" class="form-label">Selecciona una imagen</label>
+      <input class="form-control" type="file" name="image" id="image" accept="image/*" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Subir Imagen</button>
+  </form>
+</div>
+
+<%- include('footer') %>

@@ -1,0 +1,80 @@
+<%- include('layout') %>
+
+<div class="text-center mb-5">
+  <h2>Bienvenido a la Galería del Proyecto Final</h2>
+  <p class="lead">Consulta alumnos por ID o cualquier dato, y visualiza su imagen y detalles registrados.</p>
+</div>
+
+<!-- Buscar Imagen por ID -->
+<div class="container mb-9">
+  <h4>Buscar imagen por ID</h4>
+  <form action="/api/buscar-id" method="GET" class="row g-5">
+    <div class="col-auto">
+      <input type="number" name="id" class="form-control" placeholder="Introduce ID de la imagen" required>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary mb-3">Buscar</button>
+    </div>
+  </form>
+
+  <% if (imagenPorId) { %>
+    <div class="card mb-4 text-center">
+      <div class="card-body">
+        <img src="/uploads/<%= imagenPorId.filename %>" class="img-fluid rounded" style="max-height: 400px;" alt="Imagen por ID">
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Buscar por cualquier dato -->
+<form action="/api/buscar-alumno" method="GET" class="row g-3">
+  <div class="col-md-3">
+    <select name="campo" class="form-select" required>
+      <option value="nombre">Nombre</option>
+      <option value="matricula">Matrícula</option>
+      <option value="carrera">Carrera</option>
+    </select>
+  </div>
+  <div class="col-md-6">
+    <input type="text" name="valor" class="form-control" placeholder="Introduce el valor a buscar" required>
+  </div>
+  <div class="col-md-3">
+    <button type="submit" class="btn btn-success w-100">Buscar alumno</button>
+  </div>
+</form>
+
+
+  <div class="text-center mb-5">
+    <a href="/" class="btn btn-secondary">Limpiar búsqueda</a>
+  </div>
+
+  <% if (Array.isArray(alumnosFiltrados) && alumnosFiltrados.length > 0) { %>
+    <div class="table-responsive mt-4">
+      <table class="table table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Matrícula</th>
+            <th>Nombre</th>
+            <th>Carrera</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% alumnosFiltrados.forEach(al => { %>
+            <tr>
+              <td><%= al.id %></td>
+              <td><%= al.matricula %></td>
+              <td><%= al.nombre %></td>
+              <td><%= al.carrera %></td>
+              <td><%= al.status ? 'Activo' : 'Inactivo' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+  
+
+
+<%- include('footer') %>
