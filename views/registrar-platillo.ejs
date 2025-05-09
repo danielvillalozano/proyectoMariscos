@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Platillo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <header class="bg-primary text-white text-center py-4">
+        <h1 class="display-4">Restaurante de Mariscos</h1>
+        <p class="lead">Los mejores platillos frescos, directamente del mar</p>
+    </header>
+
+    <div class="container mt-5">
+        <h2 class="text-center text-dark mb-4">Registrar Nuevo Platillo</h2>
+        
+        <form action="/platillos" method="POST" enctype="multipart/form-data" class="shadow-lg p-4 bg-white rounded">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Platillo</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea id="descripcion" name="descripcion" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="precio" class="form-label">Precio</label>
+                <input type="number" id="precio" name="precio" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="imagen" class="form-label">Imagen del Platillo</label>
+                <input type="file" id="imagen" name="imagen" class="form-control" accept="image/*">
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg px-5 py-2">Registrar</button>
+            </div>
+        </form>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <p>&copy; 2025 Restaurante de Mariscos | Todos los derechos reservados para Daniel Villa Lozano</p>
+    </footer>
+
+</body>
+</html>

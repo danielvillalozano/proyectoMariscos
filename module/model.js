@@ -1,26 +1,54 @@
-// module/model.js
-const db = require('./db');
+  const mysql = require('mysql2');
 
-const alumnoDB = {
-  insertarImagen: async (filename) => {
-    const query = 'INSERT INTO images (filename) VALUES (?)';
-    await db.query(query, [filename]);
-  },
+  // Configuración de la conexión a la base de datos con manejo de errores mejorado
+  const db = mysql.createPool({
+      host: 'localhost', 
+      user: 'root',
+      password: 'ekisdeee123.',  // Confirma que esta contraseña es correcta
+      database: 'proyectoMariscos',
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+  });
 
-  obtenerImagenes: async () => {
-    const [rows] = await db.query('SELECT * FROM images ORDER BY id DESC');
-    return rows;
-  },
+  // Comprobación de conexión a la base de datos con mejor manejo de errores
+  db.getConnection((err, connection) => {
+      if (err) {
+          console.error('🚨 Error al conectar con la base de datos:', err.code, err.sqlMessage);
+      } else {
+          console.log('✅ Conexión a la base de datos establecida correctamente');
+          connection.release();
+      }
+  });
 
-  insertarAlumno: async (nombre, matricula, carrera) => {
-    const query = 'INSERT INTO alumnos (nombre, matricula, carrera) VALUES (?, ?, ?)';
-    await db.query(query, [nombre, matricula, carrera]);
-  },
+  // Obtener todos los platillos con manejo de errores mejorado
+  const obtenerPlatillos = (callback) => {
+      db.query('SELECT * FROM platillos', (err, results) => {
+          if (err) {
+              console.error('❌ Error al obtener platillos:', err.message);
+              return callback(err, null);
+          }
+          callback(null, results);
+      });
+  };
 
-  obtenerAlumnos: async () => {
-    const [rows] = await db.query('SELECT * FROM alumnos ORDER BY id DESC');
-    return rows;
-  }
-};
+  // Insertar un nuevo platillo con validación de datos
+  const insertarPlatillo = (nombre, descripcion, precio, imagen, callback) => {
+      if (!nombre || !descripcion || !precio) {
+          return callback(new Error('⚠️ Faltan datos requeridos para insertar el platillo'), null);
+      }
 
-module.exports = alumnoDB;
+      db.query(
+          'INSERT INTO platillos (nombre, descripcion, precio, imagen) VALUES (?, ?, ?, ?)',
+          [nombre, descripcion, precio, imagen || 'default.jpg'],
+          (err, results) => {
+              if (err) {
+                  console.error('❌ Error al insertar platillo:', err.message);
+                  return callback(err, null);
+              }
+              callback(null, results);
+          }
+      );
+  };
+
+  module.exports = { obtenerPlatillos, insertarPlatillo };
