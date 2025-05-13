@@ -11,10 +11,27 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Verificar conexión
+// Verificar conexión y crear tabla si no existe
 pool.getConnection()
-    .then(connection => {
+    .then(async (connection) => {
         console.log('✅ Conexión a la base de datos establecida correctamente');
+
+        // Crear tabla `usuarios` si no existe
+        const createTableQuery = `
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(50) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL
+            );
+        `;
+
+        try {
+            await connection.query(createTableQuery);
+            console.log('✅ Tabla `usuarios` verificada/creada correctamente');
+        } catch (err) {
+            console.error('🚨 Error al crear/verificar la tabla `usuarios`:', err.message);
+        }
+
         connection.release();
     })
     .catch(err => {

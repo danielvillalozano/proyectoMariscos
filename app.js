@@ -5,45 +5,57 @@ const multer = require('multer');
 const cors = require('cors');
 const helmet = require('helmet');
 const fs = require('fs');
+const session = require('express-session');
 const apiRouter = require('./routes/api');
-const PORT = process.env.PORT || 4000;
+const authRouter = require('./routes/auth');
 const { obtenerPlatillos, insertarPlatillo } = require('./module/model');
+const PORT = process.env.PORT || 4000;
 
- 
+// Middlewares para analizar datos del cuerpo de las solicitudes
+app.use(express.urlencoded({ extended: true })); // Para datos de formularios
+app.use(express.json()); // Para datos JSON
+
+// Configuración de sesión
+app.use(session({
+    secret: 'mi_secreto_seguro',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
+
+// Middlewares
 app.use(cors());
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-
-const verificarRuta = (ruta, mensajeError) => {
-    if (!fs.existsSync(ruta)) {
-        console.error(`🚨 Error: ${mensajeError}`);
-        process.exit(1);
-    }
-};
-
-verificarRuta(path.join(__dirname, 'views'), "La carpeta 'views' no existe en la ruta correcta.");
-verificarRuta(path.join(__dirname, 'views', 'index.ejs'), "El archivo 'index.ejs' no existe en 'views'. Verifica la ruta.");
-
-verificarRuta(path.join(__dirname, 'public'), "La carpeta 'public' no existe en la ruta correcta.");
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
-
+// Configuración de helmet
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
-            fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net"]
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"]
         }
     }
 }));
 
+// Configuración de vistas
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
+// Verificar rutas importantes
+const verificarRuta = (ruta, mensajeError) => {
+    if (!fs.existsSync(ruta)) {
+        console.error(`🚨 Error: ${mensajeError}`);
+        process.exit(1);
+    }
+};
+verificarRuta(path.join(__dirname, 'views'), "La carpeta 'views' no existe.");
+verificarRuta(path.join(__dirname, 'public'), "La carpeta 'public' no existe.");
+
+// Configuración de almacenamiento para imágenes
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, 'public/uploads');
@@ -59,52 +71,43 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Rutas
-const manejarError = (res, mensaje, err) => {
-    console.error(`❌ ${mensaje}:`, JSON.stringify(err, null, 2));
-    res.status(500).send(`<h3>${mensaje}</h3><pre>${JSON.stringify(err, null, 2)}</pre>`);
-};
+app.use(authRouter);
+app.use('/api', apiRouter);
 
 app.get('/', (req, res) => {
     obtenerPlatillos((err, platillos) => {
-        if (err) return manejarError(res, "Error en la consulta a la base de datos", err);
-        res.render('index', { platillos: Array.isArray(platillos) ? platillos : [] });
+        if (err) return res.status(500).send('Error al obtener platillos');
+
+        // Convertir el precio a un número o asignar 0 si no es válido
+        const platillosConvertidos = platillos.map(platillo => ({
+            ...platillo,
+            precio: parseFloat(platillo.precio) || 0 // Asegurar que el precio sea un número
+        }));
+
+        res.render('index', { platillos: platillosConvertidos, session: req.session });
     });
 });
 
-app.use('/api', apiRouter);
-
-app.get('/platillos', (req, res) => {
-    obtenerPlatillos((err, platillos) => {
-        if (err) return manejarError(res, "Error al obtener platillos", err);
-        res.render('platillos', { platillos: Array.isArray(platillos) ? platillos : [] });
-    });
-});
-
+// Ruta para mostrar el formulario de registrar platillo
 app.get('/registrar-platillo', (req, res) => {
     res.render('registrar-platillo', { title: "Registrar Platillo - Restaurante de Mariscos" });
 });
 
-app.post('/platillos', (req, res) => {
-    const { nombre, descripcion, precio, imagen } = req.body;
+// Ruta para procesar el registro de un platillo
+app.post('/platillos', upload.single('imagen'), (req, res) => {
+    const { nombre, descripcion, precio } = req.body;
+    const imagen = req.file ? req.file.filename : 'default.jpg';
 
     if (!nombre || !descripcion || !precio) {
         return res.status(400).json({ mensaje: '⚠️ Todos los campos son obligatorios' });
     }
 
-    insertarPlatillo(nombre, descripcion, precio, imagen, (err, result) => {
-        if (err) return manejarError(res, "Error al insertar platillo", err);
-        res.json({ mensaje: '✅ Platillo agregado', id: result.insertId });
+    insertarPlatillo(nombre, descripcion, parseFloat(precio), imagen, (err, result) => {
+        if (err) return res.status(500).send('Error al insertar platillo');
+        res.redirect('/');
     });
 });
 
-app.post('/subir-imagen', upload.single('imagen'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).send('⚠️ No se subió ninguna imagen');
-    }
-    res.status(200).json({ mensaje: '✅ Imagen subida correctamente', filename: req.file.filename });
-});
-
-// Arranque del servidor
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });

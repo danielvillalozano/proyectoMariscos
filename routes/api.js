@@ -50,14 +50,14 @@ router.post('/api/registrar-platillo', async (req, res) => {
 
   try {
     await platilloDB.insertar(nuevoPlatillo);
-    res.redirect('/platillos'); // suponiendo que tienes una vista que muestra todos
+    res.redirect('/platillos'); 
   } catch (err) {
     console.error('Error al registrar platillo:', err);
     res.status(500).send('Error al guardar el platillo');
   }
 });
 
-// Ruta de prueba para asegurar que funciona
+
 router.get('/', (req, res) => {
     res.json({ mensaje: 'API del restaurante funcionando correctamente' });
   });
