@@ -8,8 +8,8 @@ const fs = require('fs');
 const session = require('express-session');
 const apiRouter = require('./routes/api');
 const authRouter = require('./routes/auth');
-const { obtenerPlatillos, insertarPlatillo } = require('./module/model');
-const PORT = process.env.PORT || 4000;
+const { obtenerPlatillos, insertarPlatillo, eliminarPlatillo } = require('./module/model');
+const PORT = process.env.PORT || 3000;
 
 // Middlewares para analizar datos del cuerpo de las solicitudes
 app.use(express.urlencoded({ extended: true })); // Para datos de formularios
@@ -92,6 +92,24 @@ app.get('/', (req, res) => {
 app.get('/registrar-platillo', (req, res) => {
     res.render('registrar-platillo', { title: "Registrar Platillo - Restaurante de Mariscos" });
 });
+// Ruta para mostrar la página de Quejas y Sugerencias
+app.get('/quejas-sugerencias', (req, res) => {
+    res.render('quejas-sugerencias', { title: "Quejas y Sugerencias" });
+});
+
+// Ruta para procesar el formulario de Quejas y Sugerencias
+app.post('/quejas-sugerencias', (req, res) => {
+    const { nombre, comentario } = req.body;
+
+    if (!comentario) {
+        return res.status(400).send('⚠️ El campo de comentario es obligatorio.');
+    }
+
+    // Aquí puedes guardar los datos en una base de datos o enviarlos por correo
+    console.log(`Queja/Sugerencia recibida de ${nombre || 'Anónimo'}: ${comentario}`);
+
+    res.send('<h3>Gracias por tus comentarios. Los hemos recibido correctamente.</h3>');
+});
 
 // Ruta para procesar el registro de un platillo
 app.post('/platillos', upload.single('imagen'), (req, res) => {
@@ -104,6 +122,24 @@ app.post('/platillos', upload.single('imagen'), (req, res) => {
 
     insertarPlatillo(nombre, descripcion, parseFloat(precio), imagen, (err, result) => {
         if (err) return res.status(500).send('Error al insertar platillo');
+        res.redirect('/');
+    });
+});
+
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
+
+// Ruta para eliminar un platillo
+app.delete('/platillos/:id', (req, res) => {
+    const platilloId = req.params.id;
+
+    eliminarPlatillo(platilloId, (err) => {
+        if (err) {
+            console.error(`❌ Error al eliminar el platillo con ID ${platilloId}:`, err.message);
+            return res.status(500).send('Error al eliminar el platillo');
+        }
+
+        // Redirigir a la página principal después de eliminar
         res.redirect('/');
     });
 });
