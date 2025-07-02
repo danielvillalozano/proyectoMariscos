@@ -1,41 +1,27 @@
+// module/db.js
+
 const mysql = require('mysql2/promise');
 
-// Configuración de la conexión a la base de datos
+// ⚡ Usa .promise() desde el inicio
 const pool = mysql.createPool({
-    host: '3.139.221.24',
-    user: 'root',
-    password: 'micontraseña',  
-    database: 'proyectoMariscos',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+  host: '127.0.0.1',
+  user: 'root',
+  password: 'ekisdeee123.',
+  database: 'proyectoMariscos',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// Verificar conexión y crear tabla si no existe
-pool.getConnection()
-    .then(async (connection) => {
-        console.log('✅ Conexión a la base de datos establecida correctamente');
-
-        // Crear tabla `usuarios` si no existe
-        const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS usuarios (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL
-            );
-        `;
-
-        try {
-            await connection.query(createTableQuery);
-            console.log('✅ Tabla `usuarios` verificada/creada correctamente');
-        } catch (err) {
-            console.error('🚨 Error al crear/verificar la tabla `usuarios`:', err.message);
-        }
-
-        connection.release();
-    })
-    .catch(err => {
-        console.error('🚨 Error al conectar con la base de datos:', err.message);
-    });
+// Verificar conexión
+(async () => {
+  try {
+    const connection = await pool.getConnection();
+    console.log('✅ Conexión a la base de datos realizada correctamente');
+    connection.release();
+  } catch (error) {
+    console.error('🚨 Error al conectar a la base de datos:', error.message);
+  }
+})();
 
 module.exports = pool;

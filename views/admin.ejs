@@ -1,0 +1,54 @@
+<div class="text-center mb-5">
+    <h2>Panel de Administrador</h2>
+    <p class="lead">Gestión de platillos</p>
+  </div>
+  
+  <!-- Formulario para agregar platillo -->
+  <div class="container mb-5">
+    <h4>Agregar nuevo platillo</h4>
+    <form action="/api/registrar-platillo" method="POST" enctype="multipart/form-data" class="row g-3">
+      <div class="col-md-6">
+        <input type="text" name="nombre" class="form-control" placeholder="Nombre del platillo" required>
+      </div>
+      <div class="col-md-6">
+        <input type="text" name="descripcion" class="form-control" placeholder="Descripción" required>
+      </div>
+      <div class="col-md-6">
+        <input type="number" name="precio" class="form-control" placeholder="Precio" step="0.01" required>
+      </div>
+      <div class="col-md-6">
+        <input type="file" name="imagen" class="form-control" accept="image/*">
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-success w-100">Agregar Platillo</button>
+      </div>
+    </form>
+  </div>
+  
+  <!-- Lista de platillos -->
+  <div class="container">
+    <h4>Lista de platillos</h4>
+    <% if (platillos.length > 0) { %>
+      <div class="row">
+        <% platillos.forEach(platillo => { %>
+          <div class="col-md-4 mb-4">
+            <div class="card">
+              <img src="/uploads/<%= platillo.imagen || 'default.jpg' %>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<%= platillo.nombre %>">
+              <div class="card-body text-center">
+                <h5 class="card-title"><%= platillo.nombre %></h5>
+                <p class="card-text"><%= platillo.descripcion %></p>
+                <p class="fw-bold text-success">$<%= parseFloat(platillo.precio).toFixed(2) %></p>
+                <form action="/api/platillos/<%= platillo.id %>?_method=DELETE" method="POST" onsubmit="return confirm('¿Eliminar este platillo?')">
+                  <button class="btn btn-danger w-100 mb-2">Eliminar</button>
+                </form>
+                <a href="/editar-platillo/<%= platillo.id %>" class="btn btn-primary w-100">Editar</a>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="text-warning text-center">No hay platillos registrados.</p>
+    <% } %>
+  </div>
+  

@@ -1,66 +1,68 @@
-const mysql = require('mysql2');
+// module/model.js
+const conexion = require('./db');
 
-// Configuración de la conexión a la base de datos con manejo de errores mejorado
-const db = mysql.createPool({
-    host: 'localhost', 
-    user: 'root',
-    password: 'ekisdeee123.',  // Confirma que esta contraseña es correcta
-    database: 'proyectoMariscos',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
-
-// Comprobación de conexión a la base de datos con mejor manejo de errores
-db.getConnection((err, connection) => {
-    if (err) {
-        console.error('🚨 Error al conectar con la base de datos:', err.code, err.sqlMessage);
-    } else {
-        console.log('✅ Conexión a la base de datos establecida correctamente');
-        connection.release();
-    }
-});
-
-// Obtener todos los platillos con manejo de errores mejorado
-const obtenerPlatillos = (callback) => {
-    db.query('SELECT * FROM platillos', (err, results) => {
-        if (err) {
-            console.error('❌ Error al obtener platillos:', err.message);
-            return callback(err, null);
-        }
-        callback(null, results);
-    });
+const obtenerPlatillos = async () => {
+  const [rows] = await conexion.query('SELECT * FROM platillos');
+  return rows;
 };
 
-// Insertar un nuevo platillo con validación de datos
-const insertarPlatillo = (nombre, descripcion, precio, imagen, callback) => {
-    if (!nombre || !descripcion || !precio) {
-        return callback(new Error('⚠️ Faltan datos requeridos para insertar el platillo'), null);
-    }
-
-    db.query(
-        'INSERT INTO platillos (nombre, descripcion, precio, imagen) VALUES (?, ?, ?, ?)',
-        [nombre, descripcion, precio, imagen || 'default.jpg'],
-        (err, results) => {
-            if (err) {
-                console.error('❌ Error al insertar platillo:', err.message);
-                return callback(err, null);
-            }
-            callback(null, results);
-        }
-    );
+const insertarPlatillo = async (nombre, descripcion, precio, imagen) => {
+  const sql = 'INSERT INTO platillos (nombre, descripcion, precio, imagen) VALUES (?, ?, ?, ?)';
+  const [result] = await conexion.query(sql, [nombre, descripcion, precio, imagen]);
+  return result;
 };
 
-// Eliminar un platillo por ID
-const eliminarPlatillo = (id, callback) => {
-    const query = 'DELETE FROM platillos WHERE id = ?';
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('❌ Error al eliminar platillo:', err.message);
-            return callback(err, null);
-        }
-        callback(null, results);
-    });
+const buscarPlatilloPorNombre = async (nombre) => {
+  const sql = 'SELECT * FROM platillos WHERE nombre LIKE ?';
+  const [rows] = await conexion.query(sql, [`%${nombre}%`]);
+  return rows;
 };
 
-module.exports = { obtenerPlatillos, insertarPlatillo, eliminarPlatillo };
+const eliminarPlatillo = async (id) => {
+  const sql = 'DELETE FROM platillos WHERE id = ?';
+  const [result] = await conexion.query(sql, [id]);
+  return result;
+};
+
+const obtenerPlatilloPorId = async (id) => {
+  const sql = 'SELECT * FROM platillos WHERE id = ?';
+  const [rows] = await conexion.query(sql, [id]);
+  return rows[0];
+};
+
+const actualizarPlatillo = async (id, nombre, descripcion, precio, imagen) => {
+  const campos = [];
+  const valores = [];
+
+  if (nombre) {
+    campos.push('nombre = ?');
+    valores.push(nombre);
+  }
+  if (descripcion) {
+    campos.push('descripcion = ?');
+    valores.push(descripcion);
+  }
+  if (precio) {
+    campos.push('precio = ?');
+    valores.push(precio);
+  }
+  if (imagen) {
+    campos.push('imagen = ?');
+    valores.push(imagen);
+  }
+
+  valores.push(id);
+
+  const sql = `UPDATE platillos SET ${campos.join(', ')} WHERE id = ?`;
+  const [result] = await conexion.query(sql, valores);
+  return result;
+};
+
+module.exports = {
+  obtenerPlatillos,
+  insertarPlatillo,
+  buscarPlatilloPorNombre,
+  eliminarPlatillo,
+  obtenerPlatilloPorId,
+  actualizarPlatillo
+};

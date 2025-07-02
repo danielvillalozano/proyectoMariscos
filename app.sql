@@ -1,3 +1,9 @@
+CREATE TABLE usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(100) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE platillos (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
@@ -6,4 +12,3 @@ CREATE TABLE platillos (
   categoria VARCHAR(50) NOT NULL,
   disponible BOOLEAN DEFAULT TRUE
 );
-

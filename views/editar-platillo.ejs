@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Platillo</title>
+</head>
+<body>
+<%- include('layout') %>
+
+<div class="container mt-5">
+  <h2>Editar Platillo</h2>
+  <form action="/api/editar-platillo/<%= platillo.id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre</label>
+      <input type="text" class="form-control" id="nombre" name="nombre" value="<%= platillo.nombre %>" required>
+    </div>
+    <div class="mb-3">
+      <label for="descripcion" class="form-label">Descripción</label>
+      <textarea class="form-control" id="descripcion" name="descripcion" required><%= platillo.descripcion %></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="precio" class="form-label">Precio</label>
+      <input type="number" class="form-control" id="precio" name="precio" value="<%= platillo.precio %>" step="0.01" required>
+    </div>
+    <div class="mb-3">
+      <label for="imagen" class="form-label">Cambiar imagen (opcional)</label>
+      <input type="file" class="form-control" id="imagen" name="imagen">
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+  </form>
+</div>
+
+<%- include('footer') %>
+</body>
+</html>
+

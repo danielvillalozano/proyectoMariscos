@@ -1,0 +1,23 @@
+<%- include('layout') %>
+
+<div class="container mt-4">
+  <h3>Resultados de la búsqueda</h3>
+  <% if (platillosFiltrados.length > 0) { %>
+    <div class="row">
+      <% platillosFiltrados.forEach(platillo => { %>
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm">
+            <img src="/uploads/<%= platillo.imagen ? platillo.imagen : 'default.jpg' %>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<%= platillo.nombre %>">
+            <div class="card-body text-center">
+              <h5 class="card-title"><%= platillo.nombre %></h5>
+              <p class="card-text text-muted"><%= platillo.descripcion %></p>
+              <p class="text-success fw-bold">$<%= platillo.precio.toFixed(2) %></p>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="text-danger">No se encontraron platillos que coincidan con la búsqueda.</p>
+  <% } %>
+</div>
