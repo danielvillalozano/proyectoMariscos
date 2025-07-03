@@ -1,6 +1,8 @@
 // module/model.js
+
 const conexion = require('./db');
 
+// Platillos
 const obtenerPlatillos = async () => {
   const [rows] = await conexion.query('SELECT * FROM platillos');
   return rows;
@@ -58,11 +60,19 @@ const actualizarPlatillo = async (id, nombre, descripcion, precio, imagen) => {
   return result;
 };
 
+// 🔑 Usuarios
+const obtenerUsuarioPorNombre = async (username) => {
+  const sql = 'SELECT * FROM usuarios WHERE username = ?';
+  const [rows] = await conexion.query(sql, [username]);
+  return rows[0];
+};
+
 module.exports = {
   obtenerPlatillos,
   insertarPlatillo,
   buscarPlatilloPorNombre,
   eliminarPlatillo,
   obtenerPlatilloPorId,
-  actualizarPlatillo
+  actualizarPlatillo,
+  obtenerUsuarioPorNombre
 };

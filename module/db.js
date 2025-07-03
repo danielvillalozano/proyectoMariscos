@@ -1,8 +1,6 @@
 // module/db.js
-
 const mysql = require('mysql2/promise');
 
-// ⚡ Usa .promise() desde el inicio
 const pool = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
@@ -13,14 +11,13 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// Verificar conexión
 (async () => {
   try {
     const connection = await pool.getConnection();
     console.log('✅ Conexión a la base de datos realizada correctamente');
     connection.release();
   } catch (error) {
-    console.error('🚨 Error al conectar a la base de datos:', error.message);
+    console.error('🚨 Error de conexión:', error.message);
   }
 })();
 

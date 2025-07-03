@@ -1,4 +1,13 @@
-<!-- views/index.ejs -->
+  <!-- views/index.ejs -->
+   <% if (session.mensaje) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <%= session.mensaje %>
+    <% session.mensaje = null; %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
+
+   
 <div class="text-center mb-5">
     <h2>Bienvenido al Restaurante de Mariscos</h2>
     <p class="lead">Consulta nuestros platillos frescos y deliciosos.</p>
@@ -6,12 +15,12 @@
   
   <% if (session && session.rol === 'admin') { %>
     <div class="text-center mb-4">
-      <a href="/registrar-platillo" class="btn btn-success btn-lg">Registrar Platillo</a>
+    
       <a href="/admin" class="btn btn-warning btn-lg">Panel de Administrador</a>
     </div>
   <% } %>
   
-  <!-- Buscar Platillo por Nombre -->
+  
   <div class="container mb-5">
     <h4>Buscar platillo por nombre</h4>
     <form action="/api/buscar-nombre" method="GET" class="row g-3">

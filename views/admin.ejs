@@ -1,54 +1,61 @@
-<div class="text-center mb-5">
-    <h2>Panel de Administrador</h2>
-    <p class="lead">Gestión de platillos</p>
-  </div>
-  
-  <!-- Formulario para agregar platillo -->
-  <div class="container mb-5">
-    <h4>Agregar nuevo platillo</h4>
-    <form action="/api/registrar-platillo" method="POST" enctype="multipart/form-data" class="row g-3">
-      <div class="col-md-6">
-        <input type="text" name="nombre" class="form-control" placeholder="Nombre del platillo" required>
-      </div>
-      <div class="col-md-6">
-        <input type="text" name="descripcion" class="form-control" placeholder="Descripción" required>
-      </div>
-      <div class="col-md-6">
-        <input type="number" name="precio" class="form-control" placeholder="Precio" step="0.01" required>
-      </div>
-      <div class="col-md-6">
-        <input type="file" name="imagen" class="form-control" accept="image/*">
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-success w-100">Agregar Platillo</button>
-      </div>
-    </form>
-  </div>
-  
-  <!-- Lista de platillos -->
-  <div class="container">
-    <h4>Lista de platillos</h4>
-    <% if (platillos.length > 0) { %>
-      <div class="row">
-        <% platillos.forEach(platillo => { %>
-          <div class="col-md-4 mb-4">
-            <div class="card">
-              <img src="/uploads/<%= platillo.imagen || 'default.jpg' %>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<%= platillo.nombre %>">
-              <div class="card-body text-center">
-                <h5 class="card-title"><%= platillo.nombre %></h5>
-                <p class="card-text"><%= platillo.descripcion %></p>
-                <p class="fw-bold text-success">$<%= parseFloat(platillo.precio).toFixed(2) %></p>
-                <form action="/api/platillos/<%= platillo.id %>?_method=DELETE" method="POST" onsubmit="return confirm('¿Eliminar este platillo?')">
-                  <button class="btn btn-danger w-100 mb-2">Eliminar</button>
+<main class="container">
+  <h2 class="mb-4">Panel de Administrador</h2>
+
+  <!-- Formulario Registrar Platillo -->
+  <form action="/api/registrar-platillo" method="POST" enctype="multipart/form-data" class="mb-5">
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="descripcion" class="form-label">Descripción:</label>
+      <textarea id="descripcion" name="descripcion" class="form-control" required></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="precio" class="form-label">Precio:</label>
+      <input type="number" id="precio" name="precio" step="0.01" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="imagen" class="form-label">Imagen:</label>
+      <input type="file" id="imagen" name="imagen" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Registrar Platillo</button>
+  </form>
+
+  <!-- Tabla de Platillos -->
+  <% if (platillos && platillos.length > 0) { %>
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% platillos.forEach(platillo => { %>
+            <tr>
+              <td><%= platillo.nombre %></td>
+              <td><%= platillo.descripcion %></td>
+              <td>$<%= parseFloat(platillo.precio).toFixed(2) %></td>
+              <td>
+                <img src="/uploads/<%= platillo.imagen %>" alt="imagen" width="100" class="img-thumbnail">
+              </td>
+              <td>
+                <a href="/editar-platillo/<%= platillo.id %>" class="btn btn-warning btn-sm mb-1">Editar</a>
+                <form action="/api/platillos/<%= platillo.id %>?_method=DELETE" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
-                <a href="/editar-platillo/<%= platillo.id %>" class="btn btn-primary w-100">Editar</a>
-              </div>
-            </div>
-          </div>
-        <% }) %>
-      </div>
-    <% } else { %>
-      <p class="text-warning text-center">No hay platillos registrados.</p>
-    <% } %>
-  </div>
-  
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p class="text-muted">No hay platillos registrados aún.</p>
+  <% } %>
+</main>
