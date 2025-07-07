@@ -1,7 +1,7 @@
 <main class="container">
   <h2 class="mb-4">Panel de Administrador</h2>
 
-  <!-- Formulario Registrar Platillo -->
+  
   <form action="/api/registrar-platillo" method="POST" enctype="multipart/form-data" class="mb-5">
     <div class="mb-3">
       <label for="nombre" class="form-label">Nombre:</label>
@@ -22,7 +22,7 @@
     <button type="submit" class="btn btn-success">Registrar Platillo</button>
   </form>
 
-  <!-- Tabla de Platillos -->
+  
   <% if (platillos && platillos.length > 0) { %>
     <div class="table-responsive">
       <table class="table table-striped align-middle">

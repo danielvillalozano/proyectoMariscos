@@ -2,32 +2,32 @@ const express = require('express');
 const router = express.Router();
 const model = require('../module/model');
 
-// Vista login
+
 router.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-// Procesar login
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const usuario = await model.obtenerUsuarioPorNombre(username);
 
   if (!usuario || usuario.password !== password) {
-    return res.render('login', { error: 'Credenciales incorrectas' }); // <-- era "mensaje"
+    return res.render('login', { error: 'Credenciales incorrectas' });
   }
 
   req.session.usuario = username;
-  req.session.rol = usuario.rol || 'usuario'; // Asegura que haya rol
+  req.session.rol = usuario.rol || 'usuario'; 
 
   res.redirect('/');
 });
 
-// Vista de registro
+
 router.get('/registrarse', (req, res) => {
   res.render('registrarse', { error: null });
 });
 
-// Procesar registro
+
 router.post('/registrarse', async (req, res) => {
   const { username, password, rol } = req.body;
 

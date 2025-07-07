@@ -1,4 +1,4 @@
-// app.js
+// Usa CommonJS
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -7,12 +7,25 @@ const helmet = require('helmet');
 const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
 const methodOverride = require('method-override');
+const PORT = 3000;
 
+// Politicas CORS
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();     
+}
+);
+
+// Conexión DB
 const db = require('./module/db');
 console.log('✅ Módulo de base de datos cargado correctamente');
 
 const model = require('./module/model');
 
+// Seguridad CSP + COOP/COEP
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -22,37 +35,49 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "blob:"],
       connectSrc: ["'self'"],
+      formAction: ["'self'"],
       objectSrc: ["'none'"]
     }
-  }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: "same-origin" }
 }));
 
+
+  
+// Session
 app.use(session({
   secret: 'mi_clave_secreta_segura',
   resave: false,
   saveUninitialized: false
 }));
 
+// Method override
 app.use(methodOverride('_method'));
 
-app.use((req, res, next) => {
-  res.locals.session = req.session;
-  next();
-});
-
+// EJS + Layouts
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
+// Static & Body
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static('uploads'));
+// 🚫 NO servir /uploads aquí → lo sirve nginx directamente
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Expose session to views
+app.use((req, res, next) => {
+  res.locals.session = req.session;
+  next();
+});
+
+// Rutas externas
 const loginRoutes = require('./routes/login');
 app.use('/', loginRoutes);
 
+// Multer
 const storage = multer.diskStorage({
   destination: './uploads/',
   filename: (req, file, cb) => {
@@ -61,43 +86,38 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Middlewares auth
 function protegerRuta(req, res, next) {
-  if (req.session.usuario) {
-    next();
-  } else {
-    res.redirect('/login');
-  }
+  if (req.session.usuario) return next();
+  res.redirect('/login');
 }
 
 function soloAdmin(req, res, next) {
-  if (req.session.rol === 'admin') {
-    next();
-  } else {
-    res.status(403).send('Acceso denegado: solo administradores');
-  }
+  if (req.session.rol === 'admin') return next();
+  res.status(403).send('Acceso denegado: solo administradores');
 }
 
+// Rutas principales
 app.get('/', async (req, res) => {
   try {
     const platillos = await model.obtenerPlatillos();
     res.render('index', { platillos, platilloPorNombre: null });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al cargar la página principal');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar página principal');
   }
 });
 
 app.get('/api/buscar-nombre', protegerRuta, async (req, res) => {
   const { nombre } = req.query;
   if (!nombre) return res.status(400).send('Debes proporcionar un nombre');
-
   try {
     const resultado = await model.buscarPlatilloPorNombre(nombre);
     const platilloPorNombre = resultado.length > 0 ? resultado[0] : null;
     const platillos = await model.obtenerPlatillos();
     res.render('index', { platillos, platilloPorNombre });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).send('Error al buscar platillo');
   }
 });
@@ -106,9 +126,9 @@ app.get('/admin', protegerRuta, soloAdmin, async (req, res) => {
   try {
     const platillos = await model.obtenerPlatillos();
     res.render('admin', { platillos });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al cargar el panel de administrador');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar panel admin');
   }
 });
 
@@ -123,8 +143,8 @@ app.post('/api/registrar-platillo', protegerRuta, soloAdmin, upload.single('imag
   try {
     await model.insertarPlatillo(nombre, descripcion, parseFloat(precio), imagen);
     res.redirect('/admin');
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).send('Error al registrar platillo');
   }
 });
@@ -133,8 +153,8 @@ app.delete('/api/platillos/:id', protegerRuta, soloAdmin, async (req, res) => {
   try {
     await model.eliminarPlatillo(req.params.id);
     res.redirect('/admin');
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).send('Error al eliminar');
   }
 });
@@ -144,9 +164,9 @@ app.get('/editar-platillo/:id', protegerRuta, soloAdmin, async (req, res) => {
     const platillo = await model.obtenerPlatilloPorId(req.params.id);
     if (!platillo) return res.status(404).send('Platillo no encontrado');
     res.render('editar-platillo', { platillo });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al cargar el formulario de edición');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar edición');
   }
 });
 
@@ -157,9 +177,9 @@ app.put('/api/editar-platillo/:id', protegerRuta, soloAdmin, upload.single('imag
   try {
     await model.actualizarPlatillo(req.params.id, nombre, descripcion, parseFloat(precio), imagen);
     res.redirect('/admin');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al actualizar el platillo');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al actualizar');
   }
 });
 
@@ -170,13 +190,13 @@ app.get('/quejas-sugerencias', protegerRuta, (req, res) => {
 app.post('/quejas-sugerencias', protegerRuta, (req, res) => {
   const { nombre, comentario } = req.body;
   if (!comentario) return res.status(400).send('Comentario obligatorio');
-
   console.log(`Comentario de ${nombre || 'Anónimo'}: ${comentario}`);
   req.session.mensaje = '¡Gracias por tus comentarios!';
   res.redirect('/');
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+// Puerto
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Servidor Node local corriendo en puerto ${PORT}`);
 });
+
