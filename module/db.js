@@ -3,7 +3,7 @@ const mysql = require('mysql2/promise');
 
 // Pool de conexión a MySQL
 const pool = mysql.createPool({
-  host: '127.0.0.1',
+  host: '18.221.163.206',
   user: 'admin',
   password: '1234',
   database: 'proyectoMariscos',
@@ -16,10 +16,10 @@ const pool = mysql.createPool({
 (async () => {
   try {
     const connection = await pool.getConnection();
-    console.log('✅ Conexión a la base de datos realizada correctamente');
+    console.log(' Conexión a la base de datos realizada correctamente');
     connection.release();
   } catch (error) {
-    console.error('❌ Error de conexión:', error.message);
+    console.error(' Error de conexión:', error.message);
   }
 })();
 

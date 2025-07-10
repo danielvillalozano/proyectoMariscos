@@ -9,15 +9,14 @@ const expressLayouts = require('express-ejs-layouts');
 const methodOverride = require('method-override');
 const PORT = 3000;
 
-// Politicas CORS
+// Políticas CORS
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
   res.header("Access-Control-Allow-Headers", "Content-Type");
   res.header("Access-Control-Allow-Credentials", "true");
-  next();     
-}
-);
+  next();
+});
 
 // Conexión DB
 const db = require('./module/db');
@@ -25,26 +24,6 @@ console.log('✅ Módulo de base de datos cargado correctamente');
 
 const model = require('./module/model');
 
-// Seguridad CSP + COOP/COEP
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.jsdelivr.net"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-      imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'"],
-      formAction: ["'self'"],
-      objectSrc: ["'none'"]
-    }
-  },
-  crossOriginEmbedderPolicy: false,
-  crossOriginOpenerPolicy: { policy: "same-origin" }
-}));
-
-
-  
 // Session
 app.use(session({
   secret: 'mi_clave_secreta_segura',
@@ -63,7 +42,10 @@ app.set('layout', 'layout');
 
 // Static & Body
 app.use(express.static(path.join(__dirname, 'public')));
-// 🚫 NO servir /uploads aquí → lo sirve nginx directamente
+
+// ✅ Ahora SÍ servimos /uploads con Express
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -79,7 +61,7 @@ app.use('/', loginRoutes);
 
 // Multer
 const storage = multer.diskStorage({
-  destination: './uploads/',
+  destination: path.join(__dirname, 'uploads'),
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   }
@@ -196,7 +178,6 @@ app.post('/quejas-sugerencias', protegerRuta, (req, res) => {
 });
 
 // Puerto
-app.listen(PORT, '127.0.0.1', () => {
+app.listen(PORT, () => {
   console.log(`Servidor Node local corriendo en puerto ${PORT}`);
 });
-
