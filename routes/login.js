@@ -49,7 +49,7 @@ router.post('/registrarse', async (req, res) => {
   }
 });
 
-// Cerrar sesión
+
 router.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login');

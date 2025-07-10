@@ -1,7 +1,4 @@
-// module/db.js
 const mysql = require('mysql2/promise');
-
-// Pool de conexión a MySQL
 const pool = mysql.createPool({
   host: '18.221.163.206',
   user: 'admin',
@@ -11,8 +8,6 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
-
-// Verifica conexión (solo 1 vez)
 (async () => {
   try {
     const connection = await pool.getConnection();
@@ -22,6 +17,4 @@ const pool = mysql.createPool({
     console.error(' Error de conexión:', error.message);
   }
 })();
-
-// Exporta el pool para usar en otros módulos
 module.exports = pool;

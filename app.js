@@ -1,4 +1,4 @@
-// Usa CommonJS
+
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -7,9 +7,7 @@ const helmet = require('helmet');
 const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
 const methodOverride = require('method-override');
-const PORT = 3000;
 
-// Políticas CORS
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
@@ -18,48 +16,38 @@ app.use((req, res, next) => {
   next();
 });
 
-// Conexión DB
 const db = require('./module/db');
-console.log(' Módulo de base de datos cargado correctamente');
+console.log('Módulo de base de datos cargado correctamente');
 
 const model = require('./module/model');
 
-// Session
 app.use(session({
   secret: 'mi_clave_secreta_segura',
   resave: false,
   saveUninitialized: false
 }));
 
-// Method override
 app.use(methodOverride('_method'));
 
-// EJS + Layouts
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
-// Static & Body
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Ahora SÍ servimos /uploads con Express
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Expose session to views
 app.use((req, res, next) => {
   res.locals.session = req.session;
   next();
 });
 
-// Rutas externas
 const loginRoutes = require('./routes/login');
 app.use('/', loginRoutes);
 
-// Multer
 const storage = multer.diskStorage({
   destination: path.join(__dirname, 'uploads'),
   filename: (req, file, cb) => {
@@ -68,7 +56,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Middlewares auth
 function protegerRuta(req, res, next) {
   if (req.session.usuario) return next();
   res.redirect('/login');
@@ -79,7 +66,6 @@ function soloAdmin(req, res, next) {
   res.status(403).send('Acceso denegado: solo administradores');
 }
 
-// Rutas principales
 app.get('/', async (req, res) => {
   try {
     const platillos = await model.obtenerPlatillos();
@@ -177,7 +163,6 @@ app.post('/quejas-sugerencias', protegerRuta, (req, res) => {
   res.redirect('/');
 });
 
-// Puerto
-app.listen(PORT, () => {
-  console.log(`Servidor Node local corriendo en puerto ${PORT}`);
+app.listen(3000, () => {
+  console.log(`Servidor Node local corriendo en puerto 3000`);
 });

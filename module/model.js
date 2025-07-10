@@ -19,13 +19,11 @@ const buscarPlatilloPorNombre = async (nombre) => {
   const [rows] = await conexion.query(sql, [`%${nombre}%`]);
   return rows;
 };
-
 const eliminarPlatillo = async (id) => {
   const sql = 'DELETE FROM platillos WHERE id = ?';
   const [result] = await conexion.query(sql, [id]);
   return result;
 };
-
 const obtenerPlatilloPorId = async (id) => {
   const sql = 'SELECT * FROM platillos WHERE id = ?';
   const [rows] = await conexion.query(sql, [id]);
