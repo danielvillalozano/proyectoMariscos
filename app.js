@@ -20,7 +20,7 @@ app.use((req, res, next) => {
 
 // Conexión DB
 const db = require('./module/db');
-console.log('✅ Módulo de base de datos cargado correctamente');
+console.log(' Módulo de base de datos cargado correctamente');
 
 const model = require('./module/model');
 
